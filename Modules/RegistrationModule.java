@@ -21,18 +21,46 @@ public class RegistrationModule {
         String studentCode = inputStudentCode();
         String password = inputPassword();
 
+
+        // check for empty spaces
         if (!firstname.isEmpty() && !lastname.isEmpty() && !department.isEmpty() &&
                 !block.isEmpty() && !email.isEmpty() && !studentCode.isEmpty() && !password.isEmpty()) {
 
-            User newUser = new User(firstname, lastname, department, block, email, studentCode, password);
-            users.add(newUser);
-
-            System.out.println("\n Registration successful!");
-            System.out.println("Welcome, " + firstname + " " + lastname + "!");
+            // Check if user already exists
+            if (isUserExists(studentCode, email)) {
+                System.out.println("\nRegistration failed! SR-CODE or email already exists. Please log in or use different details.");
+                System.out.print("Register again? 'Yes/No': ");
+                String choice = sc.nextLine().trim();
+                if (choice.equalsIgnoreCase("Yes")) {
+                    startRegistration();
+                } else if (choice.equalsIgnoreCase("No")) {
+                    System.out.println("Returning to login...");
+                    return;  // Exit
+                } else {
+                    startRegistration();
+                }
+            } else {
+                // if unique/successful it will be a new user
+                User newUser = new User(firstname, lastname, department, block, email, studentCode, password);
+                users.add(newUser);
+                // if successful maadd sa storage
+                StorageModule.saveUsers(users);
+                System.out.println("\nRegistration successful!");
+                System.out.println("Welcome, " + firstname + " " + lastname + "!");
+            }
         } else {
-            System.out.println("\n Registration failed! All fields are required. Please try again.\n");
+            System.out.println("\nRegistration failed! All fields are required. Please try again.\n");
             startRegistration();
         }
+    }
+    // check if user exists na
+    private boolean isUserExists(String studentCode, String email) {
+        for (User u : users) {
+            if (u.getStudentCode().equalsIgnoreCase(studentCode) || u.getEmail().equalsIgnoreCase(email)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Inputs
